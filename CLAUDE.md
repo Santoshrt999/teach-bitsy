@@ -1,0 +1,83 @@
+# CLAUDE.md — Teach Bitsy 🤖
+
+Guidance for Claude Code (and humans) working in this repo.
+
+## What this is
+
+**Teach Bitsy** is a 100% client-side, kid-facing (ages 5–9) train-your-own-model web app.
+A child collects webcam/drag-in photos into two buckets, trains an in-browser image
+classifier (transfer learning on MobileNet), tests it, then deliberately "tricks" it to
+learn about data quality. **No backend. No accounts. No uploads. No tracking.**
+
+## ⚖️ Non-negotiable: privacy & safety (read before changing anything)
+
+- **Everything runs on-device.** Webcam frames and images are processed in-memory and stored
+  only in the browser (IndexedDB, added in Phase 5). The `getUserMedia` stream is never
+  recorded or transmitted.
+- **COPPA posture:** the app collects *no* personal information from children, so there's
+  essentially nothing to comply with. This zero-backend design *is* the safety model — do not
+  add analytics, telemetry, accounts, or any network upload. The only allowed network traffic
+  is a one-time **download** of public model weights + (self-hosted) fonts.
+- A restrictive **CSP `<meta>`** in `index.html` enforces this. If you add a network origin,
+  justify it against the privacy posture and update the CSP deliberately.
+- Always show the **kid-readable webcam explainer before** requesting camera permission.
+
+## Tech stack
+
+Vite 6 · React 19 · TypeScript (strict) · Tailwind v4 (CSS-first `@theme`) · `motion`
+(framer-motion) · Zustand · TensorFlow.js 4.x (WebGPU→WebGL→WASM) · MobileNet v3-small
+(hosted TFJS graph model) · `vite-plugin-pwa` · Vitest + RTL · **pnpm**.
+
+## Commands
+
+```bash
+pnpm dev        # dev server
+pnpm build      # tsc -b && vite build
+pnpm typecheck  # tsc --noEmit
+pnpm lint       # eslint
+pnpm test       # vitest run
+```
+
+Always run **typecheck + lint + test** before committing.
+
+## Architecture / layout
+
+```
+src/
+  App.tsx            # accessible 4-tab stepper (Collect→Teach→Test→Trick)
+  types.ts           # BitsyMood, Screen
+  state/useStore.ts  # Zustand: screen, grownUpMode, buckets[], examples[], dataset actions
+  lib/
+    dataset.ts       # PURE nudge/canTeach helpers (unit-tested)
+    image.ts         # center-crop → square JPEG data URL (canvas; webcam + upload)
+    ml/ …            # (Phase 3) backend init, mobilenet loader, trainer
+  components/
+    Bitsy.tsx        # SVG mascot, `mood` prop drives the face; motion gated on reduced-motion
+    ui/Button.tsx ui/Card.tsx   # chunky design-system primitives
+    Webcam.tsx ImageDrop.tsx PolaroidCard.tsx BucketColumn.tsx
+  screens/           # CollectScreen (built), Teach/Test/Trick (shells until their phase)
+tests/               # vitest: dataset.test.ts, store.test.ts (+ more in later phases)
+```
+
+## Design system (approved — match exactly)
+
+- Palette tokens in `src/index.css` `@theme`: paper `#FFF9EF`, ink `#2B2545`, yellow `#FFC94D`,
+  blue `#5AB8F0`, coral `#FF7A6B`, mint `#5FD6A0`.
+- Fonts: **Fredoka** (display/buttons), **Nunito** (body) — self-hosted via `@fontsource`.
+- Style: 4px ink borders, hard offset shadows (`shadow-hard` = `0 6px 0 ink`), pill buttons,
+  big rounded corners. Playful but disciplined.
+- **Always respect `prefers-reduced-motion`** (gate every animation). Mobile-first (tablets).
+- **Bitsy** appears on every screen; her `mood` (`curious`/`thinking`/`proud`/`confused`)
+  reflects model/dataset state.
+
+## Conventions
+
+- TypeScript strict; no unused locals/params (enforced). Keep ML/DOM out of pure helpers so
+  they stay unit-testable (see `lib/dataset.ts`).
+- Dispose TF.js tensors (`tf.tidy`/`dispose()`); store embeddings as `Float32Array`, not live
+  tensors (Phase 3 onward) — watch `tf.memory().numTensors` across retrains.
+- Accessibility is a hard requirement: keyboard nav, focus rings, ARIA labels, contrast.
+
+## Status
+
+See **PROGRESS.md** for the phase-by-phase log and what's next.
