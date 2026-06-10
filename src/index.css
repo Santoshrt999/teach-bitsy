@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+/* ── Teach Bitsy design tokens (approved palette + type + chunky shadows) ── */
+@theme {
+  --color-paper: #fff9ef;
+  --color-ink: #2b2545;
+  --color-yellow: #ffc94d;
+  --color-blue: #5ab8f0;
+  --color-coral: #ff7a6b;
+  --color-mint: #5fd6a0;
+
+  --font-display: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+
+  /* Hard offset shadows — the signature chunky look */
+  --shadow-hard: 0 6px 0 var(--color-ink);
+  --shadow-hard-sm: 0 4px 0 var(--color-ink);
+  --shadow-hard-lg: 0 10px 0 var(--color-ink);
+
+  --radius-chunky: 20px;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Always-visible, high-contrast focus ring for keyboard users (a11y) */
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Honour reduced-motion globally as a safety net; components also gate motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
