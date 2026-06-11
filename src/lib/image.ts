@@ -50,3 +50,13 @@ export async function fileToExampleDataUrl(file: File): Promise<string> {
 export function videoFrameToExampleDataUrl(video: HTMLVideoElement): string {
   return cropSquareToDataUrl(video, video.videoWidth, video.videoHeight);
 }
+
+/** Decode a data URL into an <img> element (for feeding the ML pipeline). */
+export function dataUrlToImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Could not decode that picture.'));
+    img.src = src;
+  });
+}

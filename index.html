@@ -9,13 +9,14 @@
       content="Teach Bitsy — teach a friendly robot to recognise pictures, right in your browser. 100% on-device. No accounts. No uploads. No tracking."
     />
     <!--
-      Content-Security-Policy: locks the app down to itself + the public model-weights
-      host. No analytics, no third-party scripts. Reinforces the on-device privacy posture.
-      'wasm-unsafe-eval' is required by the TensorFlow.js WASM/WebGPU backends.
+      Content-Security-Policy: locks the app down to ITSELF ONLY. Model weights and
+      fonts are self-hosted, so there are zero third-party runtime requests — the
+      strongest expression of the on-device privacy posture. 'wasm-unsafe-eval' is
+      required by the TensorFlow.js WASM/WebGPU backends.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://www.kaggle.com https://storage.googleapis.com https://tfhub.dev; worker-src 'self' blob:; object-src 'none'; base-uri 'self'"
+      content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'"
     />
     <title>Teach Bitsy 🤖</title>
   </head>

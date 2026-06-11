@@ -6,8 +6,8 @@ Phase-by-phase build log. Newest status at a glance:
 |------:|-------|--------|
 | 1 | Scaffold + design system + Bitsy | ✅ Done |
 | 2 | Collect screen + dataset store | ✅ Done |
-| 3 | Teach screen + TF.js pipeline | ⬜ Next |
-| 4 | Test + Trick screens | ⬜ Pending |
+| 3 | Teach screen + TF.js pipeline | ✅ Done |
+| 4 | Test + Trick screens | ⬜ Next |
 | 5 | PWA + persistence + tests + README + deploy | ⬜ Pending |
 
 Build pace: **checkpoint after each phase**. Verification gate each phase = `typecheck` +
@@ -39,16 +39,23 @@ Build pace: **checkpoint after each phase**. Verification gate each phase = `typ
 - Tests: `dataset.test.ts` (7) + `store.test.ts` (5) — **12 passing**.
 - Verified: typecheck ✅ · lint ✅ · test ✅ (12) · build ✅ (109 kB gz).
 
-## ⬜ Phase 3 — Teach screen + TF.js pipeline (next)
+## ✅ Phase 3 — Teach screen + TF.js pipeline
 
-- `lib/ml/backend.ts`: init WebGPU→WebGL→WASM, log active backend.
-- `lib/ml/mobilenet.ts`: lazy-load v3-small graph model (pinned TFJS URL) with "Waking up my
-  brain…" loader; `embed(pixels)` → 1024-d. **Verify the weights URL loads; surface 404s.**
-- `lib/ml/trainer.ts`: precompute embeddings per example, train dense head (Adam, ~30 epochs,
-  categorical CE), predict; dispose tensors.
-- Teach screen: ✨ Teach button, Smartness meter (acc), Oops meter (animated SVG loss curve),
-  grown-up-mode relabel ("Loss J(w,b)" + LR + epochs), Bitsy thinking→proud, confetti.
-- Gate: head train < 5 s on 10–30 imgs; `tf.memory().numTensors` stable across 3 retrains.
+- `lib/ml/backend.ts`: WebGPU→WebGL→WASM→CPU fallback, logs active backend; WASM binaries
+  emitted as same-origin assets.
+- **Model self-hosted** in `public/models/mobilenet-v3-small/` (the tfhub→kaggle→GCS chain
+  ended in a 3-hour *signed* URL — unfit for PWA caching). Verified loads + emits **1024-d**.
+  Self-hosting also means **zero third-party runtime requests** → CSP tightened to `'self'`.
+- `lib/ml/mobilenet.ts`: lazy `loadMobilenet()` + `embedImage()` (tidy, disposes).
+- `lib/ml/classifier.ts`: dense head `[dense(100,relu)→dropout→dense(n,softmax)]`, Adam,
+  30 epochs; `predict()`. **Bugfix: dispose `head.optimizer` (Adam slots leak otherwise).**
+- `lib/ml/teach.ts`: orchestrator with per-example embedding cache (keyed by id → survives
+  relabel/retrain, makes Trick→Fix instant).
+- Teach screen + `SmartnessMeter` (live acc), `OopsMeter` (animated SVG loss curve, grown-up
+  relabel "Loss J(w,b)" + Adam/LR/epochs/backend), `Confetti`, "Waking up my brain…" overlay.
+- TF.js lazy-loaded into its own `teach-*.js` chunk (main entry stays 37 kB gz).
+- **Verified (headless CPU smoke test on real weights):** embedding [1,1024] ✓ · 3 retrains
+  ~3.3–3.9 s on CPU (browser GPU far faster, <5 s gate met) · `numTensors` 176→176 STABLE ✓.
 
 ## Notes / decisions
 

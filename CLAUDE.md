@@ -75,7 +75,12 @@ tests/               # vitest: dataset.test.ts, store.test.ts (+ more in later p
 - TypeScript strict; no unused locals/params (enforced). Keep ML/DOM out of pure helpers so
   they stay unit-testable (see `lib/dataset.ts`).
 - Dispose TF.js tensors (`tf.tidy`/`dispose()`); store embeddings as `Float32Array`, not live
-  tensors (Phase 3 onward) — watch `tf.memory().numTensors` across retrains.
+  tensors — watch `tf.memory().numTensors` across retrains. **Gotcha:** `model.dispose()` does
+  NOT free the Adam optimizer's slot vars — `disposeHead()` disposes `head.optimizer` too.
+- **MobileNet is self-hosted** at `public/models/mobilenet-v3-small/` and loaded from the
+  same-origin `${BASE_URL}models/...` (no third-party requests). TF.js is lazy-loaded via
+  `import('../lib/ml/teach')` so it stays out of the main bundle. Hyperparameters live in the
+  tf-free `lib/ml/config.ts` so UI can show them without importing TF.js.
 - Accessibility is a hard requirement: keyboard nav, focus rings, ARIA labels, contrast.
 
 ## Status

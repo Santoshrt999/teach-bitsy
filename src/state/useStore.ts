@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Screen } from '../types';
+import type { Screen, ModelStatus, EpochLog } from '../types';
 
 /** One of the two class labels the child trains. Name is editable; id is stable. */
 export interface Bucket {
@@ -37,6 +37,22 @@ interface AppState {
   removeExample: (exampleId: string) => void;
   /** Wipe all collected examples (keeps bucket names). */
   resetDataset: () => void;
+
+  /** ── Model / training state ── */
+  modelStatus: ModelStatus;
+  backend: string | null;
+  /** Per-epoch training log; drives the Smartness + Oops meters. */
+  epochLog: EpochLog[];
+  /** Final training accuracy after the last successful teach (0–1). */
+  finalAccuracy: number | null;
+  /** Class label order used at train time. */
+  classLabels: string[];
+
+  startTeaching: () => void;
+  setModelStatus: (status: ModelStatus) => void;
+  pushEpoch: (log: EpochLog) => void;
+  finishTeaching: (accuracy: number, labels: string[], backend: string) => void;
+  failTeaching: () => void;
 }
 
 /**
@@ -69,7 +85,27 @@ export const useStore = create<AppState>((set) => ({
   removeExample: (exampleId) =>
     set((s) => ({ examples: s.examples.filter((e) => e.id !== exampleId) })),
 
-  resetDataset: () => set({ examples: [] }),
+  resetDataset: () =>
+    set({
+      examples: [],
+      modelStatus: 'untrained',
+      epochLog: [],
+      finalAccuracy: null,
+      classLabels: [],
+    }),
+
+  modelStatus: 'untrained',
+  backend: null,
+  epochLog: [],
+  finalAccuracy: null,
+  classLabels: [],
+
+  startTeaching: () => set({ modelStatus: 'warming-up', epochLog: [], finalAccuracy: null }),
+  setModelStatus: (modelStatus) => set({ modelStatus }),
+  pushEpoch: (log) => set((s) => ({ epochLog: [...s.epochLog, log] })),
+  finishTeaching: (finalAccuracy, classLabels, backend) =>
+    set({ modelStatus: 'trained', finalAccuracy, classLabels, backend }),
+  failTeaching: () => set({ modelStatus: 'error' }),
 }));
 
 /** Count of examples in a bucket. */
