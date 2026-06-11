@@ -83,6 +83,20 @@ tests/               # vitest: dataset.test.ts, store.test.ts (+ more in later p
   tf-free `lib/ml/config.ts` so UI can show them without importing TF.js.
 - Accessibility is a hard requirement: keyboard nav, focus rings, ARIA labels, contrast.
 
-## Status
+## Tasks / build phases
 
-See **PROGRESS.md** for the phase-by-phase log and what's next.
+Pace: **checkpoint after each phase** (build → show it runs → continue). Each phase's gate =
+`typecheck` + `lint` + `test` + `build` all green.
+
+- [x] **Phase 1 — Scaffold + design system + Bitsy.** Vite/React/TS strict, Tailwind v4 tokens,
+  self-hosted fonts, `ui/Button`+`ui/Card`, Bitsy (4 moods + speech bubble), accessible stepper.
+- [x] **Phase 2 — Collect screen + dataset store.** Editable buckets, webcam capture (privacy
+  explainer), drag-drop/upload, polaroids, balance/<5 nudge. 12 unit tests.
+- [x] **Phase 3 — Teach screen + TF.js pipeline.** Backend fallback, self-hosted MobileNet
+  v3-small, lazy TF.js, transfer-learning head, Smartness + Oops/loss meters, confetti.
+- [ ] **Phase 4 — Test + Trick screens.** Live predict + confidence bar + active-learning-lite;
+  guided mislabel → confused → fix → recover → takeaway card.
+- [ ] **Phase 5 — PWA + persistence + tests + README + deploy.** IndexedDB persistence + reset,
+  installable/offline PWA, remaining tests, CI workflow, Vercel config.
+
+See **PROGRESS.md** for the detailed per-phase log.
